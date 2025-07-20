@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conbello Textile - Complete Interactive Mind Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .main-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b, #4ecdc4);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 60px;
+            padding: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .mindmap-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .category-section {
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.6rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .category-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .category-header:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        .category-header:hover::before {
+            left: 100%;
+        }
+
+        .category-header.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            transform: scale(1.02);
+        }
+
+        .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .category-header.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0 0 15px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+        }
+
+        .accordion-content.active {
+            max-height: 3000px;
+            padding: 25px;
+        }
+
+        .subcategory-section {
+            margin-bottom: 30px;
+        }
+
+        .subcategory-header {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .subcategory-header:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.4);
+        }
+
+        .subcategory-header.active {
+            background: linear-gradient(135deg, #45b7d1 0%, #96c93d 100%);
+        }
+
+        .subcategory-header::after {
+            content: '▼';
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .subcategory-header.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .subcategory-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.2s ease;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .subcategory-content.active {
+            max-height: 1500px;
+            padding: 20px;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 18px 22px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.6);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .item:hover::before {
+            left: 100%;
+        }
+
+        .connector {
+            width: 3px;
+            height: 25px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            margin: 0 auto;
+            position: relative;
+            opacity: 0.7;
+        }
+
+        .connector::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #00d4ff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d4ff;
+        }
+
+        /* Category-specific colors */
+        .category-1 .category-header { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+        .category-2 .category-header { background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); }
+        .category-3 .category-header { background: linear-gradient(135deg, #45b7d1 0%, #96c93d 100%); }
+        .category-4 .category-header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .category-5 .category-header { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .category-6 .category-header { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .category-7 .category-header { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .category-8 .category-header { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.2rem;
+                margin-bottom: 40px;
+                padding: 20px;
+            }
+            
+            .category-header {
+                font-size: 1.3rem;
+                padding: 15px 20px;
+            }
+            
+            .subcategory-header {
+                font-size: 1.1rem;
+                padding: 12px 20px;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .item {
+                font-size: 0.95rem;
+                padding: 15px 18px;
+                min-height: 55px;
+            }
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            z-index: 1000;
+        }
+
+        .scroll-progress {
+            width: 100%;
+            background: linear-gradient(to bottom, #00d4ff, #ff6b6b);
+            border-radius: 2px;
+            transition: height 0.3s ease;
+        }
+
+        .expand-all-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .expand-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">Conbello Textile<br>High-End Apparel & Fitness Apparel Manufacturing</h1>
+        
+        <div class="mindmap-container">
+            
+            <div class="category-section category-1">
+                <div class="category-header" onclick="toggleAccordion(this)">Manufacturing Process</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">Fully Customizable Designs</div>
+                        <div class="item">High Quality Manufacturing</div>
+                        <div class="item">Self-Contained Design Process</div>
+                        <div class="item">Brand Specific Capabilities</div>
+                        <div class="item">Simplified Design Process</div>
+                        <div class="item">Free Support</div>
+                        <div class="item">End-to-End Service</div>
+                        <div class="item">Brand & Design Confidentiality</div>
+                        <div class="item">Ethical Sourcing Practices</div>
+                        <div class="item">Quality Control System</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-2">
+                <div class="category-header" onclick="toggleAccordion(this)">Product Categories</div>
+                <div class="accordion-content">
+                    
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Fitness & Activewear</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Leggings</div>
+                                <div class="item">Sports Bra</div>
+                                <div class="item">T-Shirts</div>
+                                <div class="item">Hoodies</div>
+                                <div class="item">Jackets</div>
+                                <div class="item">Shorts</div>
+                                <div class="item">Joggers</div>
+                                <div class="item">Tank Tops</div>
+                                <div class="item">Long Sleeves</div>
+                                <div class="item">Crop Tops</div>
+                                <div class="item">Vests</div>
+                                <div class="item">Outerwear</div>
+                                <div class="item">Swimwear</div>
+                                <div class="item">Underwear</div>
+                                <div class="item">Socks</div>
+                                <div class="item">Headwear</div>
+                                <div class="item">Gloves</div>
+                                <div class="item">Other Accessories</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Outdoor & Technical Clothing</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Hiking Apparel</div>
+                                <div class="item">Ski & Snowboard Apparel</div>
+                                <div class="item">Cycling Apparel</div>
+                                <div class="item">Climbing Apparel</div>
+                                <div class="item">Water Sports Apparel</div>
+                                <div class="item">Hunting & Fishing Apparel</div>
+                                <div class="item">Workwear & Uniforms</div>
+                                <div class="item">Protective Clothing</div>
+                                <div class="item">Tactical Gear</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Street Fashion Apparel</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">T-Shirts</div>
+                                <div class="item">Hoodies</div>
+                                <div class="item">Sweatshirts</div>
+                                <div class="item">Jackets</div>
+                                <div class="item">Jeans</div>
+                                <div class="item">Trousers</div>
+                                <div class="item">Dresses</div>
+                                <div class="item">Skirts</div>
+                                <div class="item">Jumpsuits</div>
+                                <div class="item">Rompers</div>
+                                <div class="item">Outerwear</div>
+                                <div class="item">Accessories</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-3">
+                <div class="category-header" onclick="toggleAccordion(this)">Fabric Types & Technology</div>
+                <div class="accordion-content">
+                    
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Natural Fibers</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Cotton</div>
+                                <div class="item">Linen</div>
+                                <div class="item">Wool</div>
+                                <div class="item">Silk</div>
+                                <div class="item">Rayon-Viscose</div>
+                                <div class="item">Bamboo</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Synthetic Fibers</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Polyester</div>
+                                <div class="item">Nylon</div>
+                                <div class="item">Spandex (Lycra)</div>
+                                <div class="item">Rayon</div>
+                                <div class="item">Acrylic</div>
+                                <div class="item">Modal</div>
+                                <div class="item">Tencel</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Blended Fabrics</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Cotton-Polyester Blends</div>
+                                <div class="item">Cotton-Spandex Blends</div>
+                                <div class="item">Polyester-Spandex Blends</div>
+                                <div class="item">Nylon-Spandex Blends</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Upcycled Fabrics</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Recycled Polyester</div>
+                                <div class="item">Recycled Nylon</div>
+                                <div class="item">Organic Cotton</div>
+                                <div class="item">Hemp</div>
+                                <div class="item">Bamboo</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Fabric Treatments</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Moisture-Wicking</div>
+                                <div class="item">Anti-Bacterial</div>
+                                <div class="item">UV Protection</div>
+                                <div class="item">Water-Repellent</div>
+                                <div class="item">Anti-Odor</div>
+                                <div class="item">Quick-Dry</div>
+                                <div class="item">Breathable</div>
+                                <div class="item">Compression</div>
+                                <div class="item">Thermal</div>
+                                <div class="item">Anti-Pill</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="subcategory-section">
+                        <div class="subcategory-header" onclick="toggleSubcategory(this)">Fabric Weight (GSM)</div>
+                        <div class="subcategory-content">
+                            <div class="items-grid">
+                                <div class="item">Lightweight (100-150 GSM)</div>
+                                <div class="item">Midweight (150-250 GSM)</div>
+                                <div class="item">Heavyweight (250+ GSM)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-4">
+                <div class="category-header" onclick="toggleAccordion(this)">Printing & Embellishment Technologies</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">Screen Printing</div>
+                        <div class="item">Embroidery</div>
+                        <div class="item">Graphic Printing (Heat-Sealed)</div>
+                        <div class="item">Silicone Printing (Anti-Slip, Raised, Embossed)</div>
+                        <div class="item">Direct Printing</div>
+                        <div class="item">3D Raised Printing</div>
+                        <div class="item">Puff Printing</div>
+                        <div class="item">Relief Printing</div>
+                        <div class="item">Silicone Injection</div>
+                        <div class="item">Frequency Printing</div>
+                        <div class="item">Full Garment Printing</div>
+                        <div class="item">Vinyl Leather Printing</div>
+                        <div class="item">High-Mold Printing</div>
+                        <div class="item">Hologram Printing</div>
+                        <div class="item">Plastisol Printing</div>
+                        <div class="item">Nano-Technological Printing</div>
+                        <div class="item">Laser Engraved Silicone (Brand Logo)</div>
+                        <div class="item">Eco-Friendly Washable Soft Logo Printing</div>
+                        <div class="item">Internal Working Instruction - Labels (Inner Neck)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-5">
+                <div class="category-header" onclick="toggleAccordion(this)">Sewing & Workmanship</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">High Quality Sewing Workmanship</div>
+                        <div class="item">Product Specific Technical Teams</div>
+                        <div class="item">Meticulous Workmanship</div>
+                        <div class="item">Flat Seam System (for high quality)</div>
+                        <div class="item">Flat Stitching System (for high quality)</div>
+                        <div class="item">Overlock Stitching (for "no-tear" leggings)</div>
+                        <div class="item">Coverstitch (for "no-peel" apparel)</div>
+                        <div class="item">Different Sewing Operations for Fabric Types (Cotton vs. Synthetic)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-6">
+                <div class="category-header" onclick="toggleAccordion(this)">Services for Brands</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">Support for Startups & Small Businesses</div>
+                        <div class="item">End-to-End Production Services</div>
+                        <div class="item">Direct Communication with Manufacturers</div>
+                        <div class="item">Analysis & Digital Mock-ups of Designs</div>
+                        <div class="item">Sample Production & Revisions</div>
+                        <div class="item">Certifications (ISO 9001, ISO 14001, OEKO-TEX, GOTS, BSCI, CPSIA, REACH, UKCA, ROHS, CE, CPSC, ASTM, ANSI, CSA, UL, ASTM Compliance for Textiles)</div>
+                        <div class="item">R&D Department (for custom material needs)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-7">
+                <div class="category-header" onclick="toggleAccordion(this)">Market Trends & Challenges</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">Sportswear Market Growth</div>
+                        <div class="item">Price/Marginalization Pressure</div>
+                        <div class="item">Low Price Trap</div>
+                        <div class="item">Importance of Quality</div>
+                        <div class="item">Differences: Activewear vs. Sportswear vs. Streetwear</div>
+                        <div class="item">Health Concerns with Synthetic Fabrics</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector"></div>
+
+            <div class="category-section category-8">
+                <div class="category-header" onclick="toggleAccordion(this)">Conbello Textile Overview</div>
+                <div class="accordion-content">
+                    <div class="items-grid">
+                        <div class="item">Headquarters: Istanbul, Turkey</div>
+                        <div class="item">12 Countries, 18 Departments</div>
+                        <div class="item">350 Expert Personnel</div>
+                        <div class="item">Global Reach (40+ countries incl. USA, Canada, UK, Europe, Australia)</div>
+                        <div class="item">Membership: İTO (Istanbul Chamber of Commerce), ITKIB & İHKİB</div>
+                        <div class="item">Over 40 Years of Experience</div>
+                        <div class="item">Direct Contact with Manufacturing Department – ISO-9001, ISO-10002, ISO-45001, ISO-31000, ISO-14001</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-indicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
+    <button class="expand-all-btn" onclick="toggleAllAccordions()">Tümünü Aç/Kapat</button>
+
+    <script>
+        let allExpanded = false;
+
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const isActive = header.classList.contains('active');
+            
+            if (isActive) {
+                header.classList.remove('active');
+                content.classList.remove('active');
+            } else {
+                header.classList.add('active');
+                content.classList.add('active');
+            }
+        }
+
+        function toggleSubcategory(header) {
+            const content = header.nextElementSibling;
+            const isActive = header.classList.contains('active');
+            
+            if (isActive) {
+                header.classList.remove('active');
+                content.classList.remove('active');
+            } else {
+                header.classList.add('active');
+                content.classList.add('active');
+            }
+        }
+
+        function toggleAllAccordions() {
+            const headers = document.querySelectorAll('.category-header');
+            const contents = document.querySelectorAll('.accordion-content');
+            const subHeaders = document.querySelectorAll('.subcategory-header');
+            const subContents = document.querySelectorAll('.subcategory-content');
+            
+            if (allExpanded) {
+                headers.forEach(header => header.classList.remove('active'));
+                contents.forEach(content => content.classList.remove('active'));
+                subHeaders.forEach(header => header.classList.remove('active'));
+                subContents.forEach(content => content.classList.remove('active'));
+                allExpanded = false;
+            } else {
+                headers.forEach(header => header.classList.add('active'));
+                contents.forEach(content => content.classList.add('active'));
+                subHeaders.forEach(header => header.classList.add('active'));
+                subContents.forEach(content => content.classList.add('active'));
+                allExpanded = true;
+            }
+        }
+
+        // Scroll progress indicator
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset;
+            const docHeight = document.body.offsetHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.getElementById('scrollProgress').style.height = scrollPercent + '%';
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all category sections
+        document.querySelectorAll('.category-section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'all 0.6s ease';
+            observer.observe(section);
+        });
+
+        // Auto-expand first section for demonstration
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const firstHeader = document.querySelector('.category-header');
+                if (firstHeader) {
+                    toggleAccordion(firstHeader);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
